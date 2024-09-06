@@ -1,0 +1,21 @@
+
+                        Compuerta NAN 
+
+La operacion de aprendizaje tubo un total de 17 epocas.
+
+El aprendizaje demoro aproximadamente 0.028882741928100586 segundos 
+ 
+
+    Los pesos ideales son:
+
+    W10 : -0.44 
+
+    W01 : -0.1 
+
+    W02 : -0.36 
+
+El perceptron fue entrenado par la direccion de: 
+
+Juan Moreno
+Nicolas Rodriguez Torres
+

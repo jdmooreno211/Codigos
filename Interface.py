@@ -1,3 +1,6 @@
+from Sources.compuertas import Compuertas
+from Sources.system_os import OperationsSystem
+from Sources.perceptron import Perceptron
 import customtkinter as ctk
 from PIL import Image, ImageTk
 import tkinter as tk
@@ -49,7 +52,10 @@ weights_frame = None
 table_frame = None
 result_frame = None
 ideal_weights_frame = None  # Frame para los pesos ideales
-
+#variables para compuertas
+option = 0
+obj_os = OperationsSystem()
+obj_perceptron = Perceptron()
 # Función para reiniciar la vista (destruir frames y resetear listas)
 def reset_view():
     global weights_frame, table_frame, result_frame, ideal_weights_frame, error_vars, error_labels
@@ -68,18 +74,35 @@ def reset_view():
     error_vars = []  # Resetear la lista de variables de error
     error_labels = []  # Resetear la lista de etiquetas de error
 
-# Función para cambiar los colores de los errores en función del valor
-def update_error_colors():
-    for error_entry in error_labels:
-        error_value = error_entry.get()
-        if error_value == "0":
-            error_entry.configure(fg_color="green")  # Cambiar a verde si el error es 0
-        else:
-            error_entry.configure(fg_color="red")  # Cambiar a rojo si el error es diferente de 0
+
+# Función para cambiar los colores de los errores en función del valor    
+def update_error_colors(w,opt):
+    if opt == 4:
+        aux = []
+        for i in range(3):
+            x = [float(y.get()) for y in w[i]]
+            print(x)
+            aux.append(x)
+        w = aux
+    l_w = obj_perceptron.intermediate(option=opt,weigth=w)
+    print(l_w)
+    
+    for i,error_entry in enumerate(error_labels):
+            if l_w[i] == 0:
+                error_entry.configure(fg_color="green")  # Cambiar a verde si el error es 0
+            else:
+                error_entry.configure(fg_color="red")
+            error_entry.delete(0, 'end') 
+            error_entry.insert(0, f'{l_w[i]}') 
+   
+               
+        
+
 
 # Función para mostrar la tabla de verdad, los campos de pesos, y los pesos ideales
 def show_interface():
     reset_view()  # Reiniciar la vista al seleccionar una nueva operación
+    matriz = []
 
     operation = selected_operation.get()
 
@@ -97,12 +120,16 @@ def show_interface():
 
         # Datos de la tabla de verdad con fondo oscuro y números más claros
         if operation == "AND":
+            option = 1
             table_data = [[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 1]]
         elif operation == "OR":
+            option = 2
             table_data = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]
         elif operation == "XOR":
+            option = 4
             table_data = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
         elif operation == "NAND":
+            option = 3
             table_data = [[0, 0, 1], [0, 1, 1], [1, 0, 1], [1, 1, 0]]
 
         # Ajustes para centrar la tabla y eliminar espacio extra
@@ -120,52 +147,57 @@ def show_interface():
 
         # Campos para pesos
         ctk.CTkLabel(weights_frame, text=f"Perceptrón para {operation}", font=("Arial", 16, "bold")).pack(pady=10)
-        
+        #aqui van las peticiones del precepton
+        data_pesos = obj_os.get_json(option=option)
+        if option < 4:
+            list_w = [x for x in data_pesos['Pesos ideales: '].values()]
+        else:
+            list_w = obj_os.w_xor(data_json=data_pesos)
+
+
+
         if operation == "XOR":
             # Crear campos para pesos XOR en 3x3 (w1, w2, umbral, w3, w4, umbral, w5, w6, umbral)
             xor_weights_frame = ctk.CTkFrame(weights_frame, fg_color="transparent")
             xor_weights_frame.pack(pady=5)
-
-            labels = ["Peso w1", "Peso w2", "Umbral 1", "Peso w3", "Peso w4", "Umbral 2", "Peso w5", "Peso w6", "Umbral 3"]
+            row_ = []
+            labels = ["Y1 w0", "Y1 w1", "Y1 w2", "Y2 w0", "Y2 w1", "Y2 w2", "XOR w0", "XOR w1", "XOR w2"]
             for i in range(3):
                 for j in range(3):
                     index = i * 3 + j
-                    ctk.CTkEntry(xor_weights_frame, placeholder_text=labels[index], font=("Arial", 14), width=80).grid(row=i, column=j, padx=5, pady=5)
+                    var = tk.StringVar(value=str(list_w[i][j]))  # Crear StringVar
+                    entry = ctk.CTkEntry(xor_weights_frame, textvariable=var, placeholder_text=labels[index], font=("Arial", 14), width=80)
+                    entry.grid(row=i, column=j, padx=5, pady=5)  
+                    row_.append(var)
+                matriz.append(row_)
+                row_ = []
 
         else:
+            
             # Mostrar los campos para AND, OR, y NAND (w1, w2, Umbral)
             general_weights_frame = ctk.CTkFrame(weights_frame, fg_color="transparent")
             general_weights_frame.pack(pady=5)
+ # Crear StringVar para los valores
+            normal_w0_var = tk.StringVar(value=str(list_w[0]))
+            normal_w1_var = tk.StringVar(value=str(list_w[1]))
+            normal_w2_var = tk.StringVar(value=str(list_w[2]))
+            # Campos de entrada para w0, w1 y w2
+            ctk.CTkLabel(general_weights_frame, text="w0", font=("Arial", 14)).pack(side="left", padx=2)
+            normal_w0 = ctk.CTkEntry(general_weights_frame, textvariable=normal_w0_var, placeholder_text="Bias w0", font=("Arial", 14), width=80)
+            normal_w0.pack(side="left", padx=10)
 
-            # Campos de entrada para w1, w2 y Umbral
-            ctk.CTkEntry(general_weights_frame, placeholder_text="Peso w1", font=("Arial", 14), width=80).pack(side="left", padx=10)
-            ctk.CTkEntry(general_weights_frame, placeholder_text="Peso w2", font=("Arial", 14), width=80).pack(side="left", padx=10)
-            ctk.CTkEntry(general_weights_frame, placeholder_text="Umbral", font=("Arial", 14), width=80).pack(side="left", padx=10)
+            ctk.CTkLabel(general_weights_frame, text="w1", font=("Arial", 14)).pack(side="left", padx=2)
+            normal_w1 = ctk.CTkEntry(general_weights_frame, textvariable=normal_w1_var, placeholder_text="Peso w1", font=("Arial", 14), width=80)
+            normal_w1.pack(side="left", padx=10)
 
+            ctk.CTkLabel(general_weights_frame, text="w2", font=("Arial", 14)).pack(side="left", padx=2)
+            normal_w2 = ctk.CTkEntry(general_weights_frame, textvariable=normal_w2_var, placeholder_text="Peso w2", font=("Arial", 14), width=80)
+            normal_w2.pack(side="left", padx=10)
+            
+            matriz = [float(normal_w0_var.get()),float(normal_w1_var.get()),float(normal_w2_var.get())]
         # Mostrar los pesos ideales según la operación
         ctk.CTkLabel(ideal_weights_frame, text=f"Pesos Ideales para {operation}", font=("Arial", 16, "bold")).pack(pady=10)
-
-        if operation == "XOR":
-            # Pesos ideales para XOR en 3x3
-            xor_ideal_weights_frame = ctk.CTkFrame(ideal_weights_frame, fg_color="transparent")
-            xor_ideal_weights_frame.pack(pady=5)
-
-            ideal_labels = ["Ideal w1", "Ideal w2", "Umbral Ideal 1", "Ideal w3", "Ideal w4", "Umbral Ideal 2", "Ideal w5", "Ideal w6", "Umbral Ideal 3"]
-            for i in range(3):
-                for j in range(3):
-                    index = i * 3 + j
-                    ctk.CTkEntry(xor_ideal_weights_frame, placeholder_text=ideal_labels[index], font=("Arial", 14), width=80).grid(row=i, column=j, padx=5, pady=5)
-
-        else:
-            # Pesos ideales para AND, OR, y NAND (w1, w2, Umbral)
-            general_ideal_weights_frame = ctk.CTkFrame(ideal_weights_frame, fg_color="transparent")
-            general_ideal_weights_frame.pack(pady=5)
-
             # Campos de entrada para pesos ideales
-            ctk.CTkEntry(general_ideal_weights_frame, placeholder_text="Ideal w1", font=("Arial", 14), width=80).pack(side="left", padx=10)
-            ctk.CTkEntry(general_ideal_weights_frame, placeholder_text="Ideal w2", font=("Arial", 14), width=80).pack(side="left", padx=10)
-            ctk.CTkEntry(general_ideal_weights_frame, placeholder_text="Umbral Ideal", font=("Arial", 14), width=80).pack(side="left", padx=10)
-
     # Crear campos y etiquetas para mostrar el error por cada patrón
     ctk.CTkLabel(result_frame, text="Errores por cada Patrón", font=("Arial", 16, "bold")).pack(pady=10)
 
@@ -190,10 +222,13 @@ def show_interface():
                 error_entry.grid(row=i, column=j*2 + 1, padx=10, pady=5)
 
                 error_labels.append(error_entry)  # Guardar la referencia para aplicar colores más tarde
-
     # Botón para comparar y actualizar los colores de los errores
-    ctk.CTkButton(result_frame, text="Comparar Errores", font=("Arial", 14), command=update_error_colors).pack(pady=10)
-
+    if option < 4:
+        ctk.CTkButton(result_frame, text="Comparar Errores", font=("Arial", 14),command=lambda:[update_error_colors([float(normal_w0_var.get()),float(normal_w1_var.get()),float(normal_w2_var.get())],opt=option)]).pack(pady=10)
+    else:
+        ctk.CTkButton(result_frame, text="Comparar Errores", font=("Arial", 14),command=lambda:[update_error_colors(w=matriz,opt=option)]).pack(pady=10)
+    
+    
 # Crear dos frames para ser reutilizados (uno para la tabla de verdad, uno para los pesos, y otro para los pesos ideales)
 main_inner_frame = ctk.CTkFrame(scrollable_frame)
 main_inner_frame.pack(pady=10, padx=10, fill="both", expand=True)
