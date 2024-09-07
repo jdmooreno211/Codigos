@@ -9,7 +9,8 @@ class OperationsSystem:
         with open(self.path + name_path, 'r') as file:
             data = json.load(file)
         return data
-        
+    def search_doc(self,name):
+        return os.path.join(os.getcwd(),name)
     def return_option_name(self,option):
         name = '\historial_'
         if option == 1:

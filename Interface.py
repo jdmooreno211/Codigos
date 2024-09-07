@@ -6,13 +6,17 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-
+import sys
 # Configurar el tema oscuro de la interfaz
 ctk.set_appearance_mode("dark")  # Cambiar a un modo oscuro
 ctk.set_default_color_theme("dark-blue")  # Usar un tema oscuro
+# Variables para compuertas
+option = 0
+obj_os = OperationsSystem()
+obj_perceptron = Perceptron()
 
 # Función para centrar la ventana en la pantalla
-def center_window(root, width=950, height=700):  # Ajustar a un tamaño más grande
+def center_window(root, width=1000, height=650):  # Ajustar a un tamaño más grande
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     x = (screen_width // 2) - (width // 2)
@@ -22,15 +26,15 @@ def center_window(root, width=950, height=700):  # Ajustar a un tamaño más gra
 
 # Crear la ventana principal
 root = ctk.CTk()
-root.title("Perceptrón Monocapa")
+root.title("Perceptrón Monocapa   |   Nicolas Torres Robriguez - Juan David Moreno Beltran")
 center_window(root)  # Centrar la ventana en la pantalla
-root.resizable(True, True)
+root.resizable(False, False)
 
 # Definir la variable seleccionada para el menú desplegable
 selected_operation = tk.StringVar(value="AND")  # Cambiar el valor predeterminado a "AND"
 
 # Cargar y agregar la imagen en la parte superior (reducir tamaño de la imagen)
-background_image = Image.open("facatativa-2.jpg")  # Ruta de la imagen
+background_image = Image.open(obj_os.search_doc("facatativa-2.jpg"))  # Ruta de la imagen
 background_image = background_image.resize((950, 100))  # Ajustar el tamaño de la imagen
 bg_image = ImageTk.PhotoImage(background_image)
 
@@ -40,24 +44,28 @@ image_frame.grid(row=0, column=0, columnspan=2, sticky="nsew")  # Coloca la imag
 
 # Crear un frame para el menú desplegable y el contenido principal
 controls_frame = ctk.CTkFrame(root)
-controls_frame.grid(row=1, column=0, padx=5, pady=5, sticky="n")
+controls_frame.grid(row=1, column=0, padx=5, pady=5, sticky="nsew")
 
+
+
+
+
+
+# Crear un frame con scroll para los controles
+scrollable_lefth = ctk.CTkScrollableFrame(controls_frame, width=360, height=500)
+scrollable_lefth.grid(row=1, column=1, padx=5, pady=5, sticky="nsew")
+scrollable_frame = ctk.CTkScrollableFrame(root, width=580, height=600)
+scrollable_frame.grid(row=1, column=1, padx=5, pady=5, sticky="nsew")
 # Mover el menú desplegable debajo de la imagen
-dropdown_menu = ctk.CTkOptionMenu(controls_frame, values=["AND", "OR", "XOR", "NAND"], variable=selected_operation, command=lambda _: show_interface())
+dropdown_menu = ctk.CTkOptionMenu(scrollable_lefth, values=["AND", "OR", "XOR", "NAND"], variable=selected_operation, command=lambda _: show_interface())
 dropdown_menu.grid(row=0, column=0, pady=5, padx=5)
-
 # Frame izquierdo para tabla de verdad
-table_frame = ctk.CTkFrame(controls_frame, fg_color="gray30", corner_radius=10)
+table_frame = ctk.CTkFrame(scrollable_lefth, fg_color="gray30", corner_radius=10)
 table_frame.grid(row=1, column=0, padx=5, pady=5)
 
 # Frame para entrada de pesos debajo de la tabla de verdad
-weights_frame = ctk.CTkFrame(controls_frame, fg_color="gray30", corner_radius=10)
+weights_frame = ctk.CTkFrame(scrollable_lefth, fg_color="gray30", corner_radius=10)
 weights_frame.grid(row=2, column=0, padx=5, pady=5)
-
-# Crear un frame con scroll para los controles
-scrollable_frame = ctk.CTkScrollableFrame(root, width=550, height=600)
-scrollable_frame.grid(row=1, column=1, padx=5, pady=5, sticky="nsew")
-
 # Variables
 error_vars = []  # Lista de variables para los errores
 error_labels = []  # Lista de etiquetas de error para aplicar colores
@@ -65,11 +73,11 @@ error_labels = []  # Lista de etiquetas de error para aplicar colores
 # Crear dos frames globales para ser reutilizados
 result_frame = None
 ideal_weights_frame = None  # Frame para los pesos ideales
-# Variables para compuertas
-option = 0
-obj_os = OperationsSystem()
-obj_perceptron = Perceptron()
 
+def on_closing():
+    print("Cerrando la aplicación...")
+    root.destroy()  # Destruye la ventana
+    sys.exit()  # Cierra el programa
 # Función para reiniciar la vista (destruir frames y resetear listas)
 def reset_view():
     global result_frame, ideal_weights_frame, error_vars, error_labels
@@ -158,7 +166,7 @@ def plot_error_evolution(data, operation):
 
     else:
         # Para las demás compuertas (AND, OR, NAND), una gráfica normal
-        fig, ax = plt.subplots(figsize=(4, 3), dpi=100)  # Tamaño reducido
+        fig, ax = plt.subplots(figsize=(3, 2), dpi=100)  # Tamaño reducido
         epochs = []
         errors_per_pattern = {pattern: [] for pattern in ["Patron(1)", "Patron(2)", "Patron(3)", "Patron(4)"]}
 
@@ -196,7 +204,7 @@ def plot_error_evolution(data, operation):
         # Insertar la figura en el frame de tkinter
         canvas = FigureCanvasTkAgg(fig, master=ideal_weights_frame)
         canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
+        canvas.get_tk_widget().pack(fill="both", expand=(True))
 
 from PIL import Image, ImageTk
 
@@ -209,7 +217,7 @@ def show_interface():
 
     if operation in ["AND", "OR", "XOR", "NAND"]:
         # Encabezado para la tabla de verdad
-        ctk.CTkLabel(table_frame, text=f"Tabla de Verdad para {operation}", font=("Arial", 16, "bold"), text_color="white").grid(row=0, columnspan=3, pady=5)
+        ctk.CTkLabel(table_frame, text=f"Tabla de Verdad para {operation}", font=("Arial", 16, "bold"), text_color="white").grid(row=0, columnspan=3, pady=10)
 
         # Encabezados de la tabla
         ctk.CTkLabel(table_frame, text="x1", font=("Arial", 14, "bold"), text_color="white").grid(row=1, column=0, pady=5)
@@ -257,16 +265,22 @@ def show_interface():
 
         if operation == "XOR":
             # Crear campos para pesos XOR en 3x3 (w1, w2, umbral, w3, w4, umbral, w5, w6, umbral)
+
             xor_weights_frame = ctk.CTkFrame(weights_frame, fg_color="transparent")
             xor_weights_frame.pack(pady=5)
             row_ = []
             labels = ["Y1 w0", "Y1 w1", "Y1 w2", "Y2 w0", "Y2 w1", "Y2 w2", "XOR w0", "XOR w1", "XOR w2"]
             for i in range(3):
+                
                 for j in range(3):
                     index = i * 3 + j
                     var = tk.StringVar(value=str(list_w[i][j]))  # Crear StringVar
+
+                    label = ctk.CTkLabel(xor_weights_frame, text=f'w{j}', font=("Arial", 14))
+                    label.grid(row=i, column=j*2, padx=5, pady=5, sticky="w")
+                      
                     entry = ctk.CTkEntry(xor_weights_frame, textvariable=var, placeholder_text=labels[index], font=("Arial", 14), width=80)
-                    entry.grid(row=i, column=j, padx=5, pady=5)  
+                    entry.grid(row=i, column=j*2+1, padx=5, pady=5)
                     row_.append(var)
                 matriz.append(row_)
                 row_ = []
@@ -283,25 +297,25 @@ def show_interface():
             # Campos de entrada para w0, w1 y w2
             ctk.CTkLabel(general_weights_frame, text="w0", font=("Arial", 14)).pack(side="left", padx=2)
             normal_w0 = ctk.CTkEntry(general_weights_frame, textvariable=normal_w0_var, placeholder_text="Bias w0", font=("Arial", 14), width=80)
-            normal_w0.pack(side="left", padx=10)
+            normal_w0.pack(side="left", padx=5)
 
             ctk.CTkLabel(general_weights_frame, text="w1", font=("Arial", 14)).pack(side="left", padx=2)
             normal_w1 = ctk.CTkEntry(general_weights_frame, textvariable=normal_w1_var, placeholder_text="Peso w1", font=("Arial", 14), width=80)
-            normal_w1.pack(side="left", padx=10)
+            normal_w1.pack(side="left", padx=5)
 
             ctk.CTkLabel(general_weights_frame, text="w2", font=("Arial", 14)).pack(side="left", padx=2)
             normal_w2 = ctk.CTkEntry(general_weights_frame, textvariable=normal_w2_var, placeholder_text="Peso w2", font=("Arial", 14), width=80)
-            normal_w2.pack(side="left", padx=10)
+            normal_w2.pack(side="left", padx=5)
 
             matriz = [float(normal_w0_var.get()), float(normal_w1_var.get()), float(normal_w2_var.get())]
 
         # Mostrar los pesos ideales según la operación
-        ctk.CTkLabel(ideal_weights_frame, text=f"Pesos Ideales para {operation}", font=("Arial", 16, "bold")).pack(pady=5)
+        ctk.CTkLabel(ideal_weights_frame, text=f"Graficos comparativos para {operation}", font=("Arial", 16, "bold")).pack(pady=5)
 
         # Añadir la imagen debajo de los campos de pesos
         try:
-            logo_image = Image.open("Escudo_Udec.jpg")  # Asegúrate de tener la ruta correcta
-            logo_image = logo_image.resize((200, 200))  # Redimensionar la imagen
+            logo_image = Image.open(obj_os.search_doc("Escudo_Udec.jpg"))  # Asegúrate de tener la ruta correcta
+            logo_image = logo_image.resize((150, 150))  # Redimensionar la imagen
             logo_photo = ImageTk.PhotoImage(logo_image)
 
             # Colocar la imagen justo debajo del frame de pesos
@@ -322,7 +336,7 @@ def show_interface():
     # Ajustes para mantener la estructura de 4 patrones o 12 dependiendo de la compuerta seleccionada
     if operation in ["XOR"]:
         num_errors = 12
-        rows, cols = 4, 3  # 4 filas, 3 columnas para XOR
+        rows, cols = 3, 4  # 4 filas, 3 columnas para XOR
     else:
         num_errors = 4
         rows, cols = 1, 4  # 1 fila, 4 columnas para AND, OR, NAND
@@ -336,13 +350,13 @@ def show_interface():
         for j in range(cols):
             index = i * cols + j  # Índice para los campos de error
             if index < num_errors:
-                ctk.CTkLabel(errors_frame, text=f"Patrón {index+1}: ", font=("Arial", 12)).grid(row=i, column=j*2, padx=5, pady=2, sticky="ew")  # Reducir height y padding
+                ctk.CTkLabel(errors_frame, text=f"Patrón {index+1}: ", font=("Arial", 12)).grid(row=i, column=j*2, padx=1, pady=1)  # Reducir height y padding
 
                 # Añadir el campo de Error
                 error_var = ctk.StringVar()
                 error_vars.append(error_var)
                 error_entry = ctk.CTkEntry(errors_frame, textvariable=error_var, font=("Arial", 12), placeholder_text=f"Error {index+1}", width=entry_width, height=20)
-                error_entry.grid(row=i, column=j*2 + 1, padx=5, pady=2, sticky="ew")  # Reducir height y padding
+                error_entry.grid(row=i, column=j*2 + 1, padx=5, pady=2, sticky="nsew")  # Reducir height y padding
 
                 error_labels.append(error_entry)  # Guardar la referencia para aplicar colores más tarde
 
@@ -357,7 +371,7 @@ def show_interface():
 main_inner_frame = ctk.CTkFrame(scrollable_frame)
 main_inner_frame.pack(pady=10, padx=10, fill="both", expand=True)
 
-right_frame = ctk.CTkFrame(main_inner_frame, width=500, fg_color="transparent")
+right_frame = ctk.CTkFrame(main_inner_frame, width=600, fg_color="transparent")
 right_frame.pack(side="right", padx=10, pady=10, fill="both", expand=True)
 
 # Frame para mostrar los errores
@@ -366,14 +380,17 @@ result_frame.pack(pady=10, padx=10, fill="x", expand=False)
 
 # Frame para mostrar los pesos ideales
 ideal_weights_frame = ctk.CTkFrame(scrollable_frame, fg_color="gray30", corner_radius=10)
-ideal_weights_frame.pack(pady=10, padx=10, fill="x", expand=False)
+ideal_weights_frame.pack(pady=10, padx=10, fill="x", expand=True)
 
 # Pie de página
-footer_label = ctk.CTkLabel(scrollable_frame, text="Interfaz para un Perceptrón Monocapa", font=("Arial", 10), text_color="gray")
+footer_label = ctk.CTkLabel(scrollable_frame, text="Nicolas Torres Robriguez - Juan David Moreno Beltran", font=("Arial", 10), text_color="gray")
 footer_label.pack(side="bottom", pady=10)
 
 # Mostrar la interfaz para la operación AND al inicio
 show_interface()
-
+# Configurar las proporciones de la ventana
+root.grid_rowconfigure(1, weight=1)
+root.grid_columnconfigure(0, weight=1)
+root.protocol("WM_DELETE_WINDOW", on_closing)
 # Ejecutar la ventana
 root.mainloop()
