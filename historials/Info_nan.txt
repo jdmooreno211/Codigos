@@ -1,18 +1,18 @@
 
                         Compuerta NAN 
 
-La operacion de aprendizaje tubo un total de 17 epocas.
+La operacion de aprendizaje tubo un total de 13 epocas.
 
-El aprendizaje demoro aproximadamente 0.028882741928100586 segundos 
+El aprendizaje demoro aproximadamente 0.04233574867248535 segundos 
  
 
     Los pesos ideales son:
 
-    W10 : -0.44 
+    W10 : -1.0 
 
-    W01 : -0.1 
+    W01 : -0.35 
 
-    W02 : -0.36 
+    W02 : -0.84 
 
 El perceptron fue entrenado par la direccion de: 
 

@@ -1,18 +1,18 @@
 
                         Compuerta AND 
 
-La operacion de aprendizaje tubo un total de 19 epocas.
+La operacion de aprendizaje tubo un total de 17 epocas.
 
-El aprendizaje demoro aproximadamente 0.026399850845336914 segundos 
+El aprendizaje demoro aproximadamente 0.03289794921875 segundos 
  
 
     Los pesos ideales son:
 
-    W10 : 0.56 
+    W10 : 0.59 
 
-    W01 : 0.24 
+    W01 : 0.48 
 
-    W02 : 0.43 
+    W02 : 0.24 
 
 El perceptron fue entrenado par la direccion de: 
 
